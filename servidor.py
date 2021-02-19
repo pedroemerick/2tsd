@@ -34,8 +34,8 @@ while True:
 		
 		print("Registrando Unidade Autenticadora...")
 		
-		va = mensagem.get("va")
-		vb = mensagem.get("vb")
+		va = mensagem.get("randomico_1")
+		vb = mensagem.get("randomico_2")
 		hash = mensagem.get("hash")
 		
 		va_xor_vb = int(va, 16) ^ int(vb, 16)
@@ -52,7 +52,7 @@ while True:
 			
 			hash_va_vb_vc = hashlib.sha1(str(va_vb_xor_vc).encode("utf-8")).hexdigest()
 			
-			send = json.dumps({"vc": random_vc, "hash": hash_va_vb_vc})
+			send = json.dumps({"randomico": random_vc, "hash": hash_va_vb_vc})
 			
 			c.send(send.encode())
 			
@@ -78,7 +78,7 @@ while True:
 				
 				hash_id = hashlib.sha1(str(id).encode("utf-8")).hexdigest()
 				
-				send = json.dumps({"vd": random_vd, "id": id, "hash": hash_id})
+				send = json.dumps({"randomico": random_vd, "id": id, "hash": hash_id})
 				send = send.ljust((16 - (len(send) % 16)) + len(send))
 				send = send.encode()
 				

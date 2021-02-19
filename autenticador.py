@@ -32,13 +32,13 @@ result_xor = format(result_xor, 'x')
 
 hash = hashlib.sha1(str(result_xor).encode("utf-8")).hexdigest()
 
-send = json.dumps({"op": 0, "va": random_va, "vb": random_vb, "hash": hash})
+send = json.dumps({"op": 0, "randomico_1": random_va, "randomico_2": random_vb, "hash": hash})
 sock_server.send(send.encode())
 
 message = sock_server.recv(2048)
 message = json.loads(message.decode())
 
-vc = message.get("vc")
+vc = message.get("randomico")
 
 key = (int(random_va, 16) ^ int(vc, 16)) ^ int(random_vb, 16)
 key = format(key, 'x')
@@ -59,7 +59,7 @@ data_dec = aes.decrypt(message)
 
 message = json.loads(data_dec)
 
-vd = message.get("vd")
+vd = message.get("randomico")
 hash_id_server = message.get("hash")
 
 id = int(vd, 16) ^ (int(random_vb, 16) ^ int(vc, 16))
