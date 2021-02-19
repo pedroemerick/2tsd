@@ -127,7 +127,7 @@ while True:
 			dados = aes_dec.decrypt(dados)
 			dados = dados.decode("utf-8")
 			
-			print(ID_cliente, " - Dados Recebidos: ", dados)
+			print(ID_cliente, "- Dados Recebidos:\n", dados)
 	
 sock.close()
 
