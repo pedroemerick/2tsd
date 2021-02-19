@@ -12,10 +12,9 @@ addr = (host, port)
 Dados_Clientes = {"id": []}
 unidades_aut = {}
 
+#Inicializando o socket para receber conexões
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
 sock.bind(addr)
-
 sock.listen(3)
 
 while True:
@@ -27,11 +26,10 @@ while True:
 	print ("Unidade Autenticadora Conectada - ", cliente[0], ":", cliente[1])
 	
 	mensagem = c.recv(2048)
-	
 	mensagem = json.loads(mensagem.decode())
 	
 	op = mensagem.get("op")
-	
+
 	if op == 0:
 		
 		print("Registrando Unidade Autenticadora...")
@@ -104,7 +102,6 @@ while True:
 		print("Registrando um novo cliente...")
 		
 		ID = mensagem.get("id")
-		
 		Dados_Clientes["id"].append(ID)
 		
 		print("Cliente Registrado: ", ID)
@@ -132,6 +129,5 @@ while True:
 			
 			print(ID_cliente, " - Dados Recebidos: ", dados)
 	
-
 sock.close()
 

@@ -5,28 +5,25 @@ from Crypto.Cipher import AES
 import json
 import secrets
 
-
-#Definindo variáveis e dados de conexão
-host = ''
-port = 4000
-addr = (host, port)
+# Definindo variáveis
 ids_Clientes = []
 ivs_Clientes = []
 chaves_Clientes = []
 cont_registros = -1
 
+# Dados para conexão ao servidor
 host_servidor = '127.0.0.1'
 port_servidor = 3000
 addr_servidor = ((host_servidor,port_servidor))
 
-#Primeiro a o autenticador precisará se autenticar no servidor
+# Primeiro a o autenticador precisará se autenticar no servidor
 sock_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock_server.connect(addr_servidor)
 
 print("Conectado ao Servidor...")
-
 print("Solicitando Registro...")
 
+# Iniciando processo de registro no servidor
 random_va = secrets.token_hex(8)
 random_vb = secrets.token_hex(8)
 
@@ -78,26 +75,26 @@ else:
 	
 sock_server.close()
 
+#Inicializando o socket para receber conexões
+host = ''
+port = 4000
+addr = (host, port)
 
-#Inicializando o socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
 sock.bind(addr)
-
 sock.listen(3)
 
-
-#Loop para aguardar o recebimento de requisições
+# Loop para aguardar o recebimento de requisições
 while True:
 
 	print("\nAguardando Conexão...\n")
 	
-	#Aceitando conexões
+	# Aceitando conexões
 	c, cliente = sock.accept()
 	
 	print ("Cliente Conectado - ", cliente[0], ":", cliente[1])
 	
-	#Recebe os dados do cliente
+	# Recebe os dados do cliente
 	mensagem = c.recv(2048)
 	
 	#Decodificando a mensagem recebida
@@ -105,54 +102,47 @@ while True:
 	
 	op = mensagem.get("op")
 	
-	#Caso a mensagem foi uma requisição para um cliente se registrar
+	# Caso a mensagem foi uma requisição para um cliente se registrar
 	if op == 1:
 		print("Registrando um novo cliente...")
 		
-		#Armazena o valor randômico gerado pelo cliente
+		# Armazena o valor randômico gerado pelo cliente
 		rand_1 = mensagem.get("randomico")
 		
-		#Gera o segundo valor randômico
+		# Gera o segundo valor randômico
 		rand_2 = secrets.token_hex(8)
 		
-		#Operação XOR
+		# Operação XOR
 		xor_rand1_rand2 = int(rand_1, 16) ^ int(rand_2, 16)
 		
-		#Processo de codificação antes de tirar o hash
+		# Processo de codificação antes de tirar o hash
 		xor_rand1_rand2 = format(xor_rand1_rand2, 'x')
-		
 		xor_rand1_rand2 = xor_rand1_rand2.encode()
 		
-		#Hash do resultado da operação XOR
+		# Hash do resultado da operação XOR
 		hash_rand1_rand2 = hashlib.sha1(xor_rand1_rand2).hexdigest()
 		
 		mensagem = json.dumps({"randomico": rand_2, "hash": hash_rand1_rand2})
-		
 		mensagem = mensagem.encode()
 		
-		#Envia o pacote com o valor randômico e o hash
+		# Envia o pacote com o valor randômico e o hash
 		c.send(mensagem)
 		
-		#Recebe a resposta contendo o hash
+		# Recebe a resposta contendo o hash
 		hash_chave_recebido = c.recv(2048)
-		
 		hash_chave_recebido = hash_chave_recebido.decode()
 		
 		#Hash do valor randômico 1
 		rand_1 = rand_1.encode()
-		
 		hash_rand1 = hashlib.sha1(rand_1).hexdigest()
 		
 		#Hash do valor randômico 2
 		rand_2 = rand_2.encode()
-		
 		hash_rand2 = hashlib.sha1(rand_2).hexdigest()
 		
 		#Gera a chave de criptografia
 		xor_hash = int(hash_rand1, 16) ^ int(hash_rand2, 16)
-		
 		xor_hash = format(xor_hash, 'x')
-		
 		xor_hash = xor_hash.encode()
 		
 		#Hash do resultado da chave de criptografia
@@ -163,23 +153,19 @@ while True:
 			rand_3 = secrets.token_hex(8)
 			
 			iv = (int(rand_3, 16) ^ int(rand_1, 16)) ^ int(rand_2, 16)
-			
+			iv = format(iv, 'x')
+
 			chave = (int(rand_1, 16) ^ int(rand_2, 16)) ^ int(rand_3, 16)
 			
 			ID = secrets.token_hex(8)
 			
-			iv = format(iv, 'x')
-			
 			xor_iv_ID = int(iv, 16) ^ int(ID, 16)
-			
 			xor_iv_ID = format(xor_iv_ID, 'x')
-			
 			xor_iv_ID = xor_iv_ID.encode()
 			
 			hash_xor_iv_ID = hashlib.sha1(xor_iv_ID).hexdigest()
 			
 			mensagem = json.dumps({"randomico": rand_3, "id": ID, "hash": hash_xor_iv_ID})
-			
 			mensagem = mensagem.encode()
 			
 			ids_Clientes.append(ID)
@@ -187,33 +173,27 @@ while True:
 			chaves_Clientes.append(chave)
 			
 			print("Cliente registrado com sucesso!")
-			
 			print("ID Enviado!")
 			
 			#Envia o pacotes com os dados de registro do cliente
 			c.send(mensagem)
-			
-		
 		else:
 			print("[ERRO] Chave de Criptografia Inválida!")
 		
 		
 		#Criando o socket para se comunicar com o servidor
 		sock_serv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		
 		sock_serv.connect(addr_servidor)
 		
 		print("Enviando ID do cliente registrado ao servidor...")
 		
 		mensagem = json.dumps({"op": 1, "id": ID})
-		
 		mensagem = mensagem.encode()
 		
 		sock_serv.send(mensagem)
 		
 		#Fechando conexão com o servidor
 		sock_serv.close()
-		
 		
 	#Caso a mensagem for uma solicitação de autorização para um cliente se comunicar
 	if op == 2:
@@ -224,34 +204,26 @@ while True:
 		
 		rand_5 = secrets.token_hex(8)
 		
-		cont_registros = -1
 		#Procura pelo ID do cliente que está fazendo a solicitação
-		for i in range(len(ids_Clientes)):
-			
+		cont_registros = -1
+		for i in range(len(ids_Clientes)):	
 			if ids_Clientes[i] == ID:
-				
 				cont_registros = i
 		
 		if cont_registros == -1:
-		
 			mensagem = json.dumps({"erro": "Não autorizado!"})
 			
 			print ("Cliente não autorizado!")
 			
 			c.send(mensagem.encode("utf-8"))
 		else:
-		
-		
 			xor_chave_id = int(chaves_Clientes[cont_registros]) ^ int(ids_Clientes[cont_registros], 16)
-			
 			xor_chave_id = format(xor_chave_id, 'x')
-			
 			xor_chave_id = xor_chave_id.encode()
 			
 			hash_xor_chave_id = hashlib.sha1(xor_chave_id).hexdigest()
 			
 			mensagem = json.dumps({"randomico": rand_5, "hash": hash_xor_chave_id})
-			
 			mensagem = mensagem.encode('utf-8')
 			
 			c.send(mensagem)
@@ -267,42 +239,35 @@ while True:
 			mensagem_dec = json.loads(mensagem_dec.decode())
 			
 			dados_recebidos = mensagem_dec.get("dados")
-			
 			hash_recebido = mensagem_dec.get("hash")
 			
-
 			xor_rand5_chave_id = (int(rand_5, 16) ^ int(chaves_Clientes[cont_registros], 16)) ^ int(ids_Clientes[cont_registros], 16)
-			
 			xor_rand5_chave_id = format(xor_rand5_chave_id, 'x')
-			
 			xor_rand5_chave_id = xor_rand5_chave_id.encode()
-			
+
 			hash_xor_rand5_chave_id = hashlib.sha1(xor_rand5_chave_id).hexdigest()
 
-			
 			if hash_recebido == hash_xor_rand5_chave_id:
 			
 				print("Cliente Autorizado e Dados Recebidos!")
 				
 				#Criando o socket para se comunicar com o servidor
 				sock_serv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-				
 				sock_serv.connect(addr_servidor)
 				
 				print ("Enviando dados ao servidor...")
 				
 				aes_enc = AES.new(key, AES.MODE_CFB, iv_aut)
+
 				ID_cliente = aes_enc.encrypt(ids_Clientes[cont_registros])
-				dados = aes_enc.encrypt(dados_recebidos)
-				
 				ID_cliente = base64.b64encode(ID_cliente)
-				dados = base64.b64encode(dados)
-				
 				ID_cliente = ID_cliente.decode("utf-8")
+
+				dados = aes_enc.encrypt(dados_recebidos)
+				dados = base64.b64encode(dados)
 				dados = dados.decode("utf-8")
 				
 				mensagem = json.dumps({"op": 2, "id_auth": id, "id_cliente": ID_cliente, "dados": dados})
-				
 				mensagem = mensagem.encode("utf-8")
 				
 				sock_serv.send(mensagem)
@@ -312,7 +277,5 @@ while True:
 				#Fechando conexão com o servidor
 				sock_serv.close()
 		
-			
-
 #Fecha a conexão TCP
 sock.close()
