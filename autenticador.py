@@ -300,9 +300,6 @@ while True:
 				
 				ID_cliente = ID_cliente.decode("utf-8")
 				dados = dados.decode("utf-8")
-
-				print(ID_cliente)
-				print(dados)
 				
 				mensagem = json.dumps({"op": 2, "id_auth": id, "id_cliente": ID_cliente, "dados": dados})
 				

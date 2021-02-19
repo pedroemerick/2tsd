@@ -118,9 +118,7 @@ while True:
 		if ID_auth in unidades_aut:
 		
 			ID_cliente = mensagem.get("id_cliente")
-			print(ID_cliente)
 			dados = mensagem.get("dados")
-			print(dados)
 			
 			aes_dec = AES.new(unidades_aut[ID_auth].get("key"), AES.MODE_CFB, unidades_aut[ID_auth].get("iv"))
 
