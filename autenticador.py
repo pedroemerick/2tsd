@@ -1,6 +1,6 @@
 import socket
 import hashlib
-import random, string, base64
+import base64
 from Crypto.Cipher import AES
 import json
 import secrets
@@ -8,15 +8,16 @@ import secrets
 
 #Definindo variáveis e dados de conexão
 host = ''
-port = 3000
+port = 4000
 addr = (host, port)
 ids_Clientes = []
 ivs_Clientes = []
 chaves_Clientes = []
 cont_registros = -1
 
-host_servidor = '192.168.20.1'
-addr_servidor = ((host_servidor,port))
+host_servidor = '127.0.0.1'
+port_servidor = 3000
+addr_servidor = ((host_servidor,port_servidor))
 
 #Primeiro a o autenticador precisará se autenticar no servidor
 sock_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -204,16 +205,11 @@ while True:
 		
 		print("Enviando ID do cliente registrado ao servidor...")
 		
-		
-		
 		mensagem = json.dumps({"op": 1, "id": ID})
 		
 		mensagem = mensagem.encode()
 		
 		sock_serv.send(mensagem)
-
-		#Enviando os dados recebidos pelo cliente para o servidor
-		#sock_serv.send(ID.encode())
 		
 		#Fechando conexão com o servidor
 		sock_serv.close()
@@ -302,9 +298,11 @@ while True:
 				ID_cliente = base64.b64encode(ID_cliente)
 				dados = base64.b64encode(dados)
 				
-				ID_cliente = ID_cliente.encode("utf-8")
-				dados = dados.encode("utf-8")
-				
+				ID_cliente = ID_cliente.decode("utf-8")
+				dados = dados.decode("utf-8")
+
+				print(ID_cliente)
+				print(dados)
 				
 				mensagem = json.dumps({"op": 2, "id_auth": id, "id_cliente": ID_cliente, "dados": dados})
 				
@@ -313,16 +311,6 @@ while True:
 				sock_serv.send(mensagem)
 				
 				print ("Dados enviados!")
-				
-				#aes_enc = AES.new(key, AES.MODE_CFB, iv_aut)
-				#mensagem_enc = aes_enc.encrypt(mensagem)
-				
-				#mensagem_enc = base64.b64encode(mensagem_enc)
-				
-				#mensagem_enc = mensagem_enc.decode("utf-8")
-
-				#Enviando os dados recebidos pelo cliente para o servidor
-				#sock_serv.send(mensagem_enc.encode())
 				
 				#Fechando conexão com o servidor
 				sock_serv.close()

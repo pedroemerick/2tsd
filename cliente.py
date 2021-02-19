@@ -1,16 +1,14 @@
 import socket
 import hashlib
-import random, string, base64
+import base64
 from Crypto.Cipher import AES
 import json
 import secrets
 
-
 #Definindo variáveis e dados de conexão
-host = '192.168.20.3'
-port = 3000
+host = ''
+port = 4000
 addr = ((host,port))
-
 
 #Inicializando o socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -188,8 +186,6 @@ else:
 		sock.send(dados_enc.encode())
 		
 		print ("Dados enviados!")
-
-
 
 #Fechando conexão com o autenticador
 sock.close()

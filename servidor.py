@@ -1,5 +1,5 @@
 import socket 
-import random, string, base64
+import base64
 from Crypto.Cipher import AES
 import secrets
 import hashlib
@@ -28,7 +28,7 @@ while True:
 	
 	mensagem = c.recv(2048)
 	
-	mensagem = json.loads(mensagem)
+	mensagem = json.loads(mensagem.decode())
 	
 	op = mensagem.get("op")
 	
@@ -118,21 +118,21 @@ while True:
 		if ID_auth in unidades_aut:
 		
 			ID_cliente = mensagem.get("id_cliente")
-			
+			print(ID_cliente)
 			dados = mensagem.get("dados")
+			print(dados)
 			
 			aes_dec = AES.new(unidades_aut[ID_auth].get("key"), AES.MODE_CFB, unidades_aut[ID_auth].get("iv"))
-			ID_cliente = aes_dec.decrypt(base64.b64decode(ID_cliente))
-			dados = aes_dec.decrypt(base64.b64decode(dados))
+
+			ID_cliente = base64.b64decode(ID_cliente)
+			ID_cliente = aes_dec.decrypt(ID_cliente)
+			ID_cliente = ID_cliente.decode("utf-8")
+
+			dados = base64.b64decode(dados)
+			dados = aes_dec.decrypt(dados)
+			dados = dados.decode("utf-8")
 			
-			print(ID_cliente, " - Dados Recebidos: ", mensagem.get("dados"))
-			
-			#aes_dec = AES.new(key, AES.MODE_CFB, iv)
-			#mensagem_dec = aes_dec.decrypt(base64.b64decode(mensagem))
-			
-			#mensagem_dec = json.loads(mensagem_dec.decode())
-			
-			#print(mensagem_dec)
+			print(ID_cliente, " - Dados Recebidos: ", dados)
 	
 
 sock.close()

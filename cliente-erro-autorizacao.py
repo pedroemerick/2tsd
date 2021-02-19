@@ -1,14 +1,12 @@
 import socket
 import hashlib
-import random, string, base64
+import base64
 from Crypto.Cipher import AES
 import json
-import secrets
-
 
 #Definindo variáveis e dados de conexão
-host = '192.168.20.3'
-port = 3000
+host = ''
+port = 4000
 addr = ((host,port))
 
 ID = "123123123"
